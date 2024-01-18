@@ -2,6 +2,9 @@
 # ~/.kshrc
 #
 
+# Use this file only if stdin is terminal
+[[ -t 0 ]] || return
+
 # Set some shell variables and options
 [[ -n "${UID}"  ]] || UID=$(id -u)
 [[ -n "${USER}" ]] || USER=$(id -un)
@@ -20,12 +23,12 @@ PS1='${USER}@${HOST}:${PWD}> '
 if [[ -n "${TERM}" && -t 0 ]]; then
     _off="$(tput sgr0 2>/dev/null)"	# Turn off
     _bold="$(tput bold 2>/dev/null)"	# Bold
-    _colg="$(tput setf 2 2>/dev/null)"	# Green
-    _colr="$(tput setf 4 2>/dev/null)"	# Red
+    _colg="$(tput setaf 2 2>/dev/null)"	# Green
+    _colr="$(tput setaf 1 2>/dev/null)"	# Red
     if [[ -z "${_colg}" || -z "${_colr}" ]]; then
-	# setf capability is not set, try setaf instead
-	_colg="$(tput setaf 2 2>/dev/null)"	# Green
-	_colr="$(tput setaf 1 2>/dev/null)"	# Red
+	# setaf capability is not set, try setf instead
+	_colg="$(tput setf 2 2>/dev/null)"	# Green
+	_colr="$(tput setf 4 2>/dev/null)"	# Red
     fi
     if [[ "${UID}" -eq 0 ]]; then
 	# For root user
