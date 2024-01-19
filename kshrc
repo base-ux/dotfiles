@@ -16,6 +16,11 @@ set -o vi
 set -o viraw
 [[ -n "${KSH_VERSION}" ]] && set -o multiline	# ksh93
 
+# Set timeout for root
+if [[ "${UID}" -eq 0 ]]; then
+    TMOUT=120
+fi
+
 # Set prompt
 PS1='${USER}@${HOST}:${PWD}> '
 [[ -n "${KSH_VERSION}" ]] && PS1='($(date +%H:%M)) '${PS1}	# ksh93

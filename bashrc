@@ -14,6 +14,11 @@ HISTCONTROL=ignoreboth
 HISTSIZE=1000
 HISTTIMEFORMAT="%F %T %Z  "
 
+# Set timeout for root
+if [[ "${UID}" -eq 0 ]]; then
+    TMOUT=120
+fi
+
 # Set prompt
 PS1='[\A] \u@\h:\w\$ '	# Default prompt
 # Colorize prompt
