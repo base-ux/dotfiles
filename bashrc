@@ -7,6 +7,9 @@
 
 # Set some shell variables and options
 [[ -n "${UID}" ]] || UID=$(id -u)
+
+# History options
+shopt -s histappend
 HISTCONTROL=ignoreboth
 HISTSIZE=1000
 HISTTIMEFORMAT="%F %T %Z  "
