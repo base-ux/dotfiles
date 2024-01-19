@@ -2,7 +2,7 @@
 set compatible
 if has("syntax")
     syntax off
-fi
+endif
 set autoindent
 set shiftwidth=4
 set ruler
