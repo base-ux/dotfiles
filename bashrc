@@ -2,8 +2,8 @@
 # ~/.bashrc
 #
 
-# Use this file only if stdin is terminal
-[[ -t 0 ]] || return
+# Use this file only for interactive shell
+case "$-" in ( *i* ) ;; ( * ) return ;; esac
 
 # Set some shell variables and options
 [[ -n "${UID}" ]] || UID=$(id -u)
