@@ -83,8 +83,14 @@ if test -n "${TERM}" -a -t 0 ; then
     fi
     if test -n "${_on}" -a -n "${_off}" ; then
 	case "${_sh}" in
-	    bash* ) PS1="\[${_on}\]${PS1% }\[${_off}\] " ;;
-	    ksh*  ) PS1="${_on}${PS1% }${_off} " ;;
+	    bash* )
+		PS1="\[${_on}\]${PS1% }\[${_off}\] "
+		test -n "${PS2}" && PS2="\[${_on}\]${PS2% }\[${_off}\] "
+		;;
+	    ksh*  )
+		PS1="${_on}${PS1% }${_off} "
+		test -n "${PS2}" && PS2="${_on}${PS2% }${_off} "
+		;;
 	esac
     fi
     unset _bold _colu _colr _on _off
