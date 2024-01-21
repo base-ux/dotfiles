@@ -69,6 +69,15 @@ main ()
     $local _src=""
     $local _dst=""
 
+    # Check if SRCDIR and DSTDIR variables are not empty
+    if test -z "${SRCDIR}" ; then
+	err "'SRCDIR' is not set"
+	return 1
+    elif test -z "${DSTDIR}" ; then
+	err "'DSTDIR' is not set"
+	return 1
+    fi
+
     # Check destination directory
     if test -e "${DSTDIR}" ; then
 	if ! test -d "${DSTDIR}" ; then
