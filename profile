@@ -3,11 +3,11 @@
 #
 
 # Determine shell
-if   test -n "${BASH_VERSION}"; then
+if   test -n "${BASH_VERSION}" ; then
     _sh=bash
-elif test -n "${KSH_VERSION}"; then
+elif test -n "${KSH_VERSION}" ; then
     _sh=ksh
-elif test -n "${FCEDIT}"; then
+elif test -n "${FCEDIT}" ; then
     _sh=ksh
 else
     _sh=sh
@@ -36,7 +36,7 @@ unset _p
 export PATH
 
 # Set manpages path
-if test -x /usr/bin/manpath; then
+if test -x /usr/bin/manpath ; then
     # For Linux (which has manpath binary)
     test -n "${MANPATH}" && unset MANPATH
 else
@@ -66,9 +66,9 @@ test -n "${MAILMSG}"  || MAILMSG="[YOU HAVE NEW MAIL]"
 export HOST HOSTNAME MAIL MAILMSG
 
 # Set locale to POSIX for root
-if test ${UID} -eq 0; then
+if test ${EUID} -eq 0 ; then
     LC_ALL=C
-    if test -x /usr/bin/locale; then
+    if test -x /usr/bin/locale ; then
 	# Little Linux hack
 	/usr/bin/locale -a 2>/dev/null | grep -q '^C\.utf8$' 2>/dev/null
 	test $? -eq 0 && LC_ALL=C.UTF-8
@@ -82,7 +82,7 @@ EDITOR=vi
 export TZ EDITOR
 
 # Set 'less' as PAGER if exist
-if test -x /usr/bin/less -o -x /opt/freeware/bin/less; then
+if test -x /usr/bin/less -o -x /opt/freeware/bin/less ; then
     PAGER=less
     LESS=-FM
     export PAGER LESS
@@ -95,9 +95,9 @@ fi
 test -f ${HOME}/.env && . ${HOME}/.env || true
 
 # Source appropriate .*shrc
-if test "${_sh}" = "bash"; then
+if test "${_sh}" = "bash" ; then
     test -f ${HOME}/.bashrc && . ${HOME}/.bashrc || true
-elif test "${_sh}" = "ksh"; then
+elif test "${_sh}" = "ksh" ; then
     test -f ${HOME}/.kshrc && . ${HOME}/.kshrc || true
 fi
 unset _sh
