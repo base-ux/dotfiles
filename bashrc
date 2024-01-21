@@ -47,7 +47,7 @@ esac
 
 # Set timeout for root
 if test ${EUID} -eq 0 ; then
-    TMOUT=120
+    TMOUT=7200
 fi
 
 # Set prompt
