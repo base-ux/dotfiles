@@ -4,6 +4,8 @@
 
 # Use this file only for interactive shell
 case "$-" in ( *i* ) ;; ( * ) return ;; esac
+# Prevent from repeatedly sourcing
+test -z "$_rcsourced" && _rcsourced=true || return
 
 # Determine shell
 if   test -n "${BASH_VERSION}" ; then
