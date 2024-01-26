@@ -19,6 +19,7 @@ PROG="$(basename -- $0)"
 : ${OUTFILE:="deploy.sh"}
 : ${FILELIST:=""}
 : ${INITFILE:=""}
+: ${VERSION:=""}
 
 : ${WORKDIR:=/tmp/${PROG}.$$}
 W_ARCH="${WORKDIR}/archive.pax"
@@ -277,6 +278,7 @@ embed ()
 BEGIN
 INITFILE="${INITFILE}"
 MD5SUM="${MD5SUM}"
+VERSION="${VERSION}"
 PARAMS
 
 # Unset all aliases
@@ -294,6 +296,7 @@ test -z "${local}" && local="eval"
 PROG="$(basename -- $0)"
 
 BASEDIR="${HOME:-/tmp}/.deploy"
+VERFILE="${BASEDIR}/ver"
 DEPLOYDIR="${BASEDIR}/${MD5SUM:-none}"
 LOCKFILE="${DEPLOYDIR}/.deploy.lock"
 
@@ -489,6 +492,14 @@ execcmd ()
     fi
 }
 
+# Save version information
+bumpver ()
+{
+    if test -n "${VERSION}" ; then
+	cmd echo "${VERSION}" > "${VERFILE}"
+    fi
+}
+
 # Clean deployment directory
 cleanup ()
 {
@@ -518,9 +529,10 @@ main ()
     trap 'trapped=true cleanup; exit 130' HUP INT TERM
     startup || fail
     {
-	extract &&
-	unpack  &&
-	execcmd
+	extract  &&
+	unpack   &&
+	execcmd  &&
+	bumpver
     } || clean_fail
     cleanup
 }
