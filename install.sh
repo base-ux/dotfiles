@@ -192,4 +192,4 @@ main ()
 }
 
 # Call main subroutine
-main
+main "$@"

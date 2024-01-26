@@ -551,7 +551,7 @@ EOF
 ## End of embedded blob ##
 
 # Call main subroutine
-main
+main "$@"
 END
 }
 
