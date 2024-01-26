@@ -480,7 +480,7 @@ unpack ()
 }
 
 # Execute defined init file
-execcmd ()
+execinit ()
 {
     if ! test -f "${INITFILE}" ; then
 	err "execution program '${INITFILE}' is not found"
@@ -531,7 +531,7 @@ main ()
     {
 	extract  &&
 	unpack   &&
-	execcmd  &&
+	execinit &&
 	bumpver
     } || clean_fail
     cleanup
