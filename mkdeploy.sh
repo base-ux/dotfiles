@@ -9,6 +9,7 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
+test -z "${local}" && local="eval"
 
 # Set variables
 PROG="$(basename -- $0)"
@@ -219,6 +220,10 @@ mkdeploy ()
 cpdeploy ()
 {
     cmd cp "${W_OUT}" "${OUTFILE}"
+    if test $? -ne 0 ; then
+	err "can't copy file '${W_OUT}' to file '${OUTFILE}'"
+	return 1
+    fi
 }
 
 # Clean working directory
@@ -283,6 +288,7 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
+test -z "${local}" && local="eval"
 
 # Set variables
 PROG="$(basename -- $0)"
