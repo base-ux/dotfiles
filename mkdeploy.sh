@@ -389,13 +389,16 @@ chksum_openssl ()
 
 decode_uudecode ()
 {
-    cmd sed -e '1ibegin-base64 644 /dev/stdout' -e '$a====' | \
-	cmd uudecode -o "${ARCHFILE}"
+    {
+	echo "begin-base64 644 /dev/stdout"
+	cat
+	echo "===="
+    } | cmd uudecode -o "${ARCHFILE}"
 }
 
 decode_base64 ()
 {
-    cmd base64 -d >"${ARCHFILE}"
+    cmd base64 -d > "${ARCHFILE}"
 }
 
 decode_openssl ()
