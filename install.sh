@@ -102,7 +102,7 @@ copy_file ()
     # Check destination file
     if test -f "${_dst}" ; then
 	# If destination file in place check for differences
-	cmd diff "${_src}" "${_dst}"
+	cmd diff "${_src}" "${_dst}" >/dev/null
 	test $? -eq 0 && return 0	# No differences
 	# Check for write permissions
 	if ! test -w "${_dst}" ; then
