@@ -12,17 +12,79 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
+test -z "${local}" && local="eval"
+
+# Set variables
+PROG="$(basename -- $0)"
+
+SRCDIR="$(dirname -- $0)"
+DSTDIR="${HOME}"
+BCKDIR="${DSTDIR}/.instdist"
+
+COPYFILES="
+bashrc
+exrc
+inputrc
+profile
+vimrc
+"
+
+LINKFILES="
+bashrc:kshrc
+"
+
+REMOVEFILES="
+bash_profile
+bash_login
+"
 
 # Print error message
 err ()
 {
-    echo "${PROG}: error: $@"
+    echo "${PROG}: error: $@" >&2
 }
 
-# Execute command and discard output
+# Execute command and discard stderr
 cmd ()
 {
-    command -p ${1+"$@"} >/dev/null 2>&1
+    command ${1+"$@"} 2>/dev/null
+}
+
+# Check directory availability or create it
+check_dir ()
+{
+    $local _dir="$1"
+
+    test -n "${_dir}" || return 1
+    if test -e "${_dir}" ; then
+	if ! test -d "${_dir}" ; then
+	    err "'${_dir}' is not directory"
+	    return 1
+	elif ! test -w "${_dir}" ; then
+	    err "directory '${_dir}' is not writable"
+	    return 1
+	fi
+    else
+	# Try to create directory
+	cmd mkdir -p "${_dir}"
+	if test $? -ne 0 ; then
+	    err "can't create directory '${_dir}'"
+	    return 1
+	fi
+    fi
+}
+
+# Check for empty variable
+check_var ()
+{
+    $local _var="$1"
+
+    test -n "${_var}" || return 1
+    eval test -n \"\${${_var}}\"
+    if test $? -ne 0 ; then
+	err "'${_var}' is not set"
+	return 1
+    fi
 }
 
 # Copy single source file to destination file
@@ -31,6 +93,7 @@ copy_file ()
     $local _src="$1"
     $local _dst="$2"
 
+    test -n "${_src}" -a -n "${_dst}" || return 1
     # Check source file
     if ! test -f "${_src}" ; then
 	err "file '${_src}' not found"
@@ -58,7 +121,6 @@ copy_file ()
 	err "can't copy file '${_src}' to file '${_dst}'"
 	return 1
     fi
-    return 0
 }
 
 # Main subroutine
@@ -69,32 +131,14 @@ main ()
     $local _src=""
     $local _dst=""
 
-    # Check if SRCDIR and DSTDIR variables are not empty
-    if test -z "${SRCDIR}" ; then
-	err "'SRCDIR' is not set"
-	return 1
-    elif test -z "${DSTDIR}" ; then
-	err "'DSTDIR' is not set"
-	return 1
-    fi
+    # Check variables
+    {
+	check_var SRCDIR &&
+	check_var DSTDIR
+    } || return 1
 
     # Check destination directory
-    if test -e "${DSTDIR}" ; then
-	if ! test -d "${DSTDIR}" ; then
-	    err "'${DSTDIR}' is not directory"
-	    return 1
-	elif ! test -w "${DSTDIR}" ; then
-	    err "directory '${DSTDIR}' not writable"
-	    return 1
-	fi
-    else
-	# Try to create directory
-	cmd mkdir -p "${DSTDIR}"
-	if test $? -ne 0 ; then
-	    err "can't create directory '${DSTDIR}'"
-	    return 1
-	fi
-    fi
+    check_dir "${DSTDIR}"
 
     # Backup destination files only for the first time
     # and if the backup directory is successfully created
@@ -146,30 +190,6 @@ main ()
 	fi
     done
 }
-
-# Set variables
-PROG="$(basename $0)"
-
-SRCDIR="$(dirname $0)"
-DSTDIR="${HOME}"
-BCKDIR="${DSTDIR}/.instdist"
-
-COPYFILES="
-bashrc
-exrc
-inputrc
-profile
-vimrc
-"
-
-LINKFILES="
-bashrc:kshrc
-"
-
-REMOVEFILES="
-bash_profile
-bash_login
-"
 
 # Call main subroutine
 main
