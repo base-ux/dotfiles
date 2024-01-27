@@ -19,6 +19,7 @@ PROG="$(basename -- $0)"
 : ${OUTFILE:="deploy.sh"}
 : ${FILELIST:=""}
 : ${INITFILE:=""}
+: ${PRODUCT:=""}
 : ${VERSION:=""}
 
 : ${WORKDIR:=/tmp/${PROG}.$$}
@@ -276,9 +277,11 @@ embed ()
 
 # Deploy parameters
 BEGIN
+PRODUCT="${PRODUCT}"
+VERSION="${VERSION}"
+
 INITFILE="${INITFILE}"
 MD5SUM="${MD5SUM}"
-VERSION="${VERSION}"
 PARAMS
 
 # Unset all aliases
@@ -296,7 +299,6 @@ test -z "${local}" && local="eval"
 PROG="$(basename -- $0)"
 
 BASEDIR="${HOME:-/tmp}/.deploy"
-VERFILE="${BASEDIR}/ver"
 DEPLOYDIR="${BASEDIR}/${MD5SUM:-none}"
 LOCKFILE="${DEPLOYDIR}/.deploy.lock"
 
@@ -495,8 +497,8 @@ execinit ()
 # Save version information
 bumpver ()
 {
-    if test -n "${VERSION}" ; then
-	cmd echo "${VERSION}" > "${VERFILE}"
+    if test -n "${PRODUCT}" -a -n "${VERSION}" ; then
+	cmd echo "${VERSION}" > "${BASEDIR}/${PRODUCT}"
     fi
 }
 

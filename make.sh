@@ -8,10 +8,15 @@ test -n "${MKDEPLOY}" || MKDEPLOY="${D}/mkdeploy.sh"
 test -x "${MKDEPLOY}" || MKDEPLOY="command -p sh \"${MKDEPLOY}\""
 
 # Set variables
+PRODUCT="dotfiles"
+VERSION=""
+
 SRCDIR="${D}"
 OUTDIR="${D}"
-VERFILE="${D}/version"
-VERSION=""
+
+OUTFILE="${OUTDIR}/${PRODUCT}.sh"
+VERFILE="${SRCDIR}/version"
+
 INITFILE="install.sh"
 FILELIST="
 bashrc
@@ -42,11 +47,14 @@ if test -f "${VERFILE}" ; then
 	VERSION="1"
 	echo "${VERSION}" > "${VERFILE}"
     fi
+    OUTFILE="${OUTDIR}/${PRODUCT}-v${VERSION}.sh"
 fi
 
 # Run 'mkdeploy' passing parameters via variables
 SRCDIR="${SRCDIR}" \
 OUTDIR="${OUTDIR}" \
+OUTFILE="${OUTFILE}" \
+PRODUCT="${PRODUCT}" \
 VERSION="${VERSION}" \
 INITFILE="${INITFILE}" \
 FILELIST="${FILELIST}" \
