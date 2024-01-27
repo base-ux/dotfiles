@@ -84,7 +84,7 @@ export TZ EDITOR
 # Set 'less' as PAGER if exist
 if test -x /usr/bin/less -o -x /opt/freeware/bin/less ; then
     PAGER=less
-    LESS=-FM
+    LESS=-FMR
     export PAGER LESS
 else
     PAGER=more
