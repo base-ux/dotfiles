@@ -9,7 +9,7 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
-test -z "${local}" && local="eval"
+alias local="$local"
 
 # Set variables
 PROG="$(basename -- $0)"
@@ -48,7 +48,7 @@ cmd ()
 # Print first found command in the list
 find_command ()
 {
-    $local _cmd=""
+    local _cmd=""
 
     for _cmd in "$@" ; do
 	command -v "${_cmd}" >/dev/null 2>&1 && { echo "${_cmd}" ; return ; } || continue
@@ -59,7 +59,7 @@ find_command ()
 # Check directory availability or create it
 check_dir ()
 {
-    $local _dir="$1"
+    local _dir="$1"
 
     test -n "${_dir}" || return 1
     if test -e "${_dir}" ; then
@@ -83,7 +83,7 @@ check_dir ()
 # Check for empty variable
 check_var ()
 {
-    $local _var="$1"
+    local _var="$1"
 
     test -n "${_var}" || return 1
     eval test -n \"\${${_var}}\"
@@ -140,7 +140,7 @@ pack_tar ()
 # Initialization subroutine
 startup ()
 {
-    $local _f=""
+    local _f=""
 
     # Check binaries
     # Encode
@@ -183,8 +183,8 @@ startup ()
 
     # Normalize output file path
     case "${OUTFILE}" in
-	/* ) ;;
-	*  ) OUTFILE="${OUTDIR}/${OUTFILE}" ;;
+	( /* ) ;;
+	(  * ) OUTFILE="${OUTDIR}/${OUTFILE}" ;;
     esac
 
     # Check working directory
@@ -252,11 +252,132 @@ clean_fail ()
     fail
 }
 
+###
+
+# Default options handlers
+opt_unknown_handler () { return 0 ; }
+opt_missing_handler () { return 0 ; }
+opt_remain_handler  () { return 0 ; }
+
+# Process command line options
+get_opts ()
+{
+    local _opt=""
+
+    test -n "${optstring}" || return 1
+    while getopts "${optstring}" _opt ; do
+	case "${_opt}" in
+	    ( '?' ) opt_unknown_handler "${OPTARG}" ;  return 1 ;;
+	    ( ':' ) opt_missing_handler "${OPTARG}" ;  return 1 ;;
+	    (  *  ) opt_${_opt}_handler "${OPTARG}" || return 1 ;;
+	esac
+    done
+    shift $((${OPTIND} - 1))
+    opt_remain_handler "$@"
+}
+
+# Set options handler
+set_opt_handler ()
+{
+    local _hdl="$1"  ; test -n "${_hdl}"  || return 1 ; shift
+    local _opts="$@" ; test -n "${_opts}" || return 1
+    local _opt=""
+    local _c=""
+
+    case "${_hdl}" in
+	( [![:alpha:]_]* | [[:alpha:]_]*[![:alnum:]_]* ) return 1 ;;
+    esac
+    for _opt in ${_opts} ; do
+	case "${_opt}" in
+	    ( '@u' ) eval "opt_unknown_handler () { ${_hdl} \"${_opt}\" \"\$@\" ; }" ;;
+	    ( '@m' ) eval "opt_missing_handler () { ${_hdl} \"${_opt}\" \"\$@\" ; }" ;;
+	    ( '@r' ) eval "opt_remain_handler  () { ${_hdl} \"${_opt}\" \"\$@\" ; }" ;;
+	    ( ':'* | *'::'* | *[![:alnum:]:]* ) return 1 ;;
+	    ( * )
+		optstring="${optstring:-:}${_opt}"
+		while test -n "${_opt}" ; do
+		    _c="${_opt%${_opt#?}}"
+		    _opt="${_opt#?}"
+		    test "${_c}" = ":" && continue
+		    eval "opt_${_c}_handler () { ${_hdl} \"${_c}\" \"\$@\" ; }"
+		done
+	esac
+    done
+}
+
+###
+
+usage ()
+{
+    cat << EOF
+Usage: ${PROG} [-d destdir] [-f file]... [-i initfile] [-o outfile] [-s srcdir]
+	[-P product] [-V version]
+EOF
+}
+
+usage_help ()
+{
+    usage
+    cat << EOF
+
+Help text
+EOF
+}
+
+wrong_opts ()
+{
+    local _opt="$1" ; shift
+
+    case "${_opt}" in
+	( '@u' ) err "unknown option -- '$@'" ;;
+	( '@m' ) err "missing argument for option -- '$@'" ;;
+	( '@r' ) test $# -eq 0 && return 0 || err "too many arguments" ;;
+    esac
+    usage
+    return 1
+}
+
+set_opts ()
+{
+    local _opt="$1" ; shift
+
+    case "${_opt}" in
+	( 'd' ) OUTDIR="$@"   ;;
+	( 'i' ) INITFILE="$@" ;;
+	( 'o' ) OUTFILE="$@"  ;;
+	( 's' ) SRCDIR="$@"   ;;
+	( 'P' ) PRODUCT="$@"  ;;
+	( 'V' ) VERSION="$@"  ;;
+    esac
+}
+
+add_filelist ()
+{
+    shift
+    test -z "${FILELIST}" && FILELIST="$@" || FILELIST="${FILELIST} $@"
+}
+
+set_options ()
+{
+    {
+	set_opt_handler "wrong_opts" "@m" "@r" "@u" &&
+	set_opt_handler "set_opts" "d:i:o:s:P:V:" &&
+	set_opt_handler "add_filelist" "f:"
+    } || return 1
+}
+
+###
+
 # Main subroutine
 main ()
 {
+    case "$1" in ( '-help' | '--help' ) usage_help ; return 0 ;; esac
+    {
+	set_options &&
+	get_opts "$@"
+    } || fail
     trap 'cleanup; exit 130' HUP INT TERM
-    startup  || fail
+    startup || fail
     {
 	mkpack   &&
 	mkblob   &&
