@@ -322,7 +322,10 @@ usage_help ()
 
 Help text
 EOF
+    exit 0
 }
+
+###
 
 wrong_opts ()
 {
@@ -368,16 +371,51 @@ set_options ()
 
 ###
 
+get_options ()
+{
+    local _opt=""
+
+    case "$1" in ( '-?' | '-help' | '--help' ) usage_help ;; esac
+    while getopts ":d:f:i:o:s:P:V:" _opt ; do
+	case "${_opt}" in
+	    ( 'd' ) OUTDIR="${OPTARG}"   ;;
+	    ( 'i' ) INITFILE="${OPTARG}" ;;
+	    ( 'o' ) OUTFILE="${OPTARG}"  ;;
+	    ( 's' ) SRCDIR="${OPTARG}"   ;;
+	    ( 'P' ) PRODUCT="${OPTARG}"  ;;
+	    ( 'V' ) VERSION="${OPTARG}"  ;;
+	    ( 'f' )
+		test -z "${FILELIST}" &&
+		FILELIST="${OPTARG}" ||
+		FILELIST="${FILELIST} ${OPTARG}"
+		;;
+	    ( '?' )
+		err "unknown option -- '${OPTARG}'"
+		usage
+		return 1
+		;;
+	    ( ':' )
+		err "missing argument for option -- '${OPTARG}'"
+		usage
+		return 1
+		;;
+	esac
+    done
+    shift $((${OPTIND} - 1))
+    if test $# -gt 0 ; then
+	err "too many arguments"
+	usage
+	return 1
+    fi
+}
+
+###
+
 # Main subroutine
 main ()
 {
-    case "$1" in ( '-help' | '--help' ) usage_help ; return 0 ;; esac
-    {
-	set_options &&
-	get_opts "$@"
-    } || fail
     trap 'cleanup; exit 130' HUP INT TERM
-    startup || fail
+    get_options "$@" && startup || fail
     {
 	mkpack   &&
 	mkblob   &&
