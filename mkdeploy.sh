@@ -371,7 +371,7 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
-test -z "${local}" && local="eval"
+alias local="$local"
 
 # Set variables
 PROG="$(basename -- $0)"
@@ -405,7 +405,7 @@ cmd ()
 # Print first found command in the list
 find_command ()
 {
-    $local _cmd=""
+    local _cmd=""
 
     for _cmd in "$@" ; do
 	command -v "${_cmd}" >/dev/null 2>&1 && { echo "${_cmd}" ; return ; } || continue
@@ -416,7 +416,7 @@ find_command ()
 # Check directory availability or create it
 check_dir ()
 {
-    $local _dir="$1"
+    local _dir="$1"
 
     test -n "${_dir}" || return 1
     if test -e "${_dir}" ; then
@@ -440,7 +440,7 @@ check_dir ()
 # Check for lock file existance or create it
 check_lock ()
 {
-    $local _lock="$1"
+    local _lock="$1"
 
     test -n "${_lock}" || return 1
     if test -f "${_lock}" ; then
@@ -534,7 +534,7 @@ startup ()
 # Extract archive from embedded blob
 extract ()
 {
-    $local _md5=""
+    local _md5=""
 
     if ! blob | decode_${decode_cmd} ; then
 	err "can't extract file '${ARCHFILE}'"

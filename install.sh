@@ -12,7 +12,7 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
-test -z "${local}" && local="eval"
+alias local="$local"
 
 # Set variables
 PROG="$(basename -- $0)"
@@ -53,7 +53,7 @@ cmd ()
 # Check directory availability or create it
 check_dir ()
 {
-    $local _dir="$1"
+    local _dir="$1"
 
     test -n "${_dir}" || return 1
     if test -e "${_dir}" ; then
@@ -77,7 +77,7 @@ check_dir ()
 # Check for empty variable
 check_var ()
 {
-    $local _var="$1"
+    local _var="$1"
 
     test -n "${_var}" || return 1
     eval test -n \"\${${_var}}\"
@@ -90,8 +90,8 @@ check_var ()
 # Copy single source file to destination file
 copy_file ()
 {
-    $local _src="$1"
-    $local _dst="$2"
+    local _src="$1"
+    local _dst="$2"
 
     test -n "${_src}" -a -n "${_dst}" || return 1
     # Check source file
@@ -126,10 +126,10 @@ copy_file ()
 # Main subroutine
 main ()
 {
-    $local _bck=""
-    $local _f=""
-    $local _src=""
-    $local _dst=""
+    local _bck=""
+    local _f=""
+    local _src=""
+    local _dst=""
 
     # Check variables
     {
