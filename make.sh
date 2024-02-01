@@ -1,32 +1,30 @@
 #!/bin/sh
 
 D="$(dirname -- $0)"
+D="$(cd -- "${D}" ; pwd)"
 
 # Choose 'mkdeploy'
 SH="$(command -v sh)"
 MKDEPLOY="$(command -v mkdeploy)"
-test -n "${MKDEPLOY}" || MKDEPLOY="${D}/mkdeploy.sh"
+if test -z "${MKDEPLOY}" ; then
+    MKDEPLOY="${D}/mkdeploy.sh"
+    test -f "${MKDEPLOY}" || { echo "no mkdeploy found" ; exit 1 ; }
+fi
 test -x "${MKDEPLOY}" || MKDEPLOY="${SH} \"${MKDEPLOY}\""
 
 # Set variables
 PRODUCT="dotfiles"
-VERSION="2"
+VERSION="3"
 
 SRCDIR="${D}"
-OUTDIR="${D}"
+OUTDIR="${D}/out"
 
-OUTFILE="${OUTDIR}/${PRODUCT}-v${VERSION}.sh"
+OUTFILE="${PRODUCT}-v${VERSION}.sh"
 
 INITFILE="install.sh"
 FILELIST="bashrc exrc inputrc profile vimrc"
 
-# Run 'mkdeploy' passing parameters via variables
-eval '\
-SRCDIR="${SRCDIR}" \
-OUTDIR="${OUTDIR}" \
-OUTFILE="${OUTFILE}" \
-PRODUCT="${PRODUCT}" \
-VERSION="${VERSION}" \
-INITFILE="${INITFILE}" \
-FILELIST="${FILELIST}"' \
-"${MKDEPLOY}"
+# Run 'mkdeploy'
+eval "${MKDEPLOY}" -s "${SRCDIR}" -d "${OUTDIR}" -o "${OUTFILE}" \
+		   -f \"${FILELIST}\" -i "${INITFILE}" \
+		   -P "${PRODUCT}" -V "${VERSION}"
