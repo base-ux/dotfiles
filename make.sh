@@ -1,7 +1,19 @@
 #!/bin/sh
 
+# Set variables
+PRODUCT="dotfiles"
+VERSION="4"
+
 D="$(dirname -- $0)"
 D="$(cd -- "${D}" ; pwd)"
+
+SRCDIR="${D}"
+OUTDIR="${D}/out"
+
+OUTFILE="${PRODUCT}-v${VERSION}.sh"
+
+INITFILE="install.sh"
+FILELIST="bashrc exrc inputrc profile vimrc"
 
 # Choose 'mkdeploy'
 SH="$(command -v sh)"
@@ -11,18 +23,6 @@ if test -z "${MKDEPLOY}" ; then
     test -f "${MKDEPLOY}" || { echo "no mkdeploy found" ; exit 1 ; }
 fi
 test -x "${MKDEPLOY}" || MKDEPLOY="${SH} \"${MKDEPLOY}\""
-
-# Set variables
-PRODUCT="dotfiles"
-VERSION="3"
-
-SRCDIR="${D}"
-OUTDIR="${D}/out"
-
-OUTFILE="${PRODUCT}-v${VERSION}.sh"
-
-INITFILE="install.sh"
-FILELIST="bashrc exrc inputrc profile vimrc"
 
 # Run 'mkdeploy'
 eval "${MKDEPLOY}" -s "${SRCDIR}" -d "${OUTDIR}" -o "${OUTFILE}" \
