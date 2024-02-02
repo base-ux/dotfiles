@@ -12,14 +12,20 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
-alias local="$local"
+alias local="${local}"
+
+###
 
 # Set variables
-PROG="$(basename -- $0)"
+PROG="$(basename -- "$0")"
 
-SRCDIR="$(dirname -- $0)"
+SRCDIR="$(cd -- "$(dirname -- "$0")" ; pwd)"
 DSTDIR="${HOME}"
-BCKDIR="${DSTDIR}/.instdist"
+
+: ${XDG_DATA_HOME:="${HOME}/.local/share"}
+
+BCKDIR="${XDG_DATA_HOME}/spxshell/backup"
+BACKUP="no"	# No backup by default
 
 COPYFILES="
 bashrc
@@ -37,6 +43,8 @@ REMOVEFILES="
 bash_profile
 bash_login
 "
+
+###
 
 # Print error message
 err ()
@@ -87,6 +95,8 @@ check_var ()
     fi
 }
 
+###
+
 # Copy single source file to destination file
 copy_file ()
 {
@@ -123,13 +133,10 @@ copy_file ()
     fi
 }
 
-# Main subroutine
-main ()
+# Initialization subroutine
+startup ()
 {
-    local _bck=""
-    local _f=""
-    local _src=""
-    local _dst=""
+    local _umask=""
 
     # Check variables
     {
@@ -138,29 +145,46 @@ main ()
     } || return 1
 
     # Check destination directory
-    check_dir "${DSTDIR}"
+    check_dir "${DSTDIR}" || return 1
 
     # Backup destination files only for the first time
     # and if the backup directory is successfully created
     if test -d "${BCKDIR}" ; then
-	_bck="no"
+	BACKUP="no"
     else
 	# Try to create directory
+	_umask="$(umask)"	# Save umask value
+	umask 0077		# Create only user accessible directories
 	cmd mkdir -p "${BCKDIR}"
-	test $? -ne 0 && _bck="no" || _bck="yes"
+	test $? -ne 0 && BACKUP="no" || BACKUP="yes"
+	umask "${_umask}"	# Restore umask
     fi
+}
 
-    # Copy files
+# Copy files
+copy_files ()
+{
+    local _f=""
+    local _src=""
+    local _dst=""
+
     for _f in ${COPYFILES} ; do
 	_src="${SRCDIR}/${_f}"
 	_dst="${DSTDIR}/.${_f}"
 	# Try to backup destination file
 	# Ignore unsuccessful copying
-	test "${_bck}" = "yes" -a -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
+	test "${BACKUP}" = "yes" -a -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
 	copy_file "${_src}" "${_dst}"
     done
+}
 
-    # Link files
+# Link files
+link_files ()
+{
+    local _f=""
+    local _src=""
+    local _dst=""
+
     for _f in ${LINKFILES} ; do
 	_src="${_f%:*}"
 	test -n "${_src}" -a "${_src}" != "${_f}" && _src=".${_src}" || continue
@@ -169,19 +193,25 @@ main ()
 	# Skip if the link exists
 	test -L "${_dst}" && continue
 	# Try to backup file
-	test "${_bck}" = "yes" -a -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
+	test "${BACKUP}" = "yes" -a -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
 	cmd ln -sf "${_src}" "${_dst}"
 	if test $? -ne 0 ; then
 	    err "can't create symbolic link '${_src}' -> '${_dst}'"
 	fi
     done
+}
 
-    # Remove files
+# Remove files
+remove_files ()
+{
+    local _f=""
+    local _dst=""
+
     for _f in ${REMOVEFILES} ; do
 	_dst="${DSTDIR}/.${_f}"
 	if test -f "${_dst}" ; then
 	    # Try to backup file
-	    test "${_bck}" = "yes" && cmd cp "${_dst}" "${BCKDIR}"
+	    test "${BACKUP}" = "yes" && cmd cp "${_dst}" "${BCKDIR}"
 	    # Try to remove file
 	    cmd rm -f "${_dst}"
 	    if test $? -ne 0 ; then
@@ -189,6 +219,15 @@ main ()
 	    fi
 	fi
     done
+}
+
+# Main subroutine
+main ()
+{
+    startup || return 1
+    copy_files
+    link_files
+    remove_files
 }
 
 # Call main subroutine
