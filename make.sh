@@ -2,7 +2,7 @@
 
 # Set variables
 PRODUCT="dotfiles"
-VERSION="4"
+VERSION="5"
 
 D="$(dirname -- $0)"
 D="$(cd -- "${D}" ; pwd)"
@@ -13,7 +13,7 @@ OUTDIR="${D}/out"
 OUTFILE="${PRODUCT}-v${VERSION}.sh"
 
 INITFILE="install.sh"
-FILELIST="bashrc exrc inputrc profile vimrc"
+FILELIST="dot.bashrc dot.exrc dot.inputrc dot.profile dot.vimrc"
 
 # Choose 'mkdeploy'
 SH="$(command -v sh)"

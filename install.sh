@@ -28,20 +28,20 @@ BCKDIR="${XDG_DATA_HOME}/spxshell/backup"
 BACKUP="no"	# No backup by default
 
 COPYFILES="
-bashrc
-exrc
-inputrc
-profile
-vimrc
+dot.bashrc
+dot.exrc
+dot.inputrc
+dot.profile
+dot.vimrc
 "
 
 LINKFILES="
-bashrc:kshrc
+dot.bashrc:dot.kshrc
 "
 
 REMOVEFILES="
-bash_profile
-bash_login
+dot.bash_profile
+dot.bash_login
 "
 
 ###
@@ -170,7 +170,7 @@ copy_files ()
 
     for _f in ${COPYFILES} ; do
 	_src="${SRCDIR}/${_f}"
-	_dst="${DSTDIR}/.${_f}"
+	_dst="${DSTDIR}/${_f#dot}"
 	# Try to backup destination file
 	# Ignore unsuccessful copying
 	test "${BACKUP}" = "yes" -a -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
@@ -187,9 +187,9 @@ link_files ()
 
     for _f in ${LINKFILES} ; do
 	_src="${_f%:*}"
-	test -n "${_src}" -a "${_src}" != "${_f}" && _src=".${_src}" || continue
+	test -n "${_src}" -a "${_src}" != "${_f}" && _src="${_src#dot}" || continue
 	_dst="${_f#*:}"
-	test -n "${_dst}" -a "${_dst}" != "${_f}" && _dst="${DSTDIR}/.${_dst}" || continue
+	test -n "${_dst}" -a "${_dst}" != "${_f}" && _dst="${DSTDIR}/${_dst#dot}" || continue
 	# Skip if the link exists
 	test -L "${_dst}" && continue
 	# Try to backup file
@@ -208,7 +208,7 @@ remove_files ()
     local _dst=""
 
     for _f in ${REMOVEFILES} ; do
-	_dst="${DSTDIR}/.${_f}"
+	_dst="${DSTDIR}/${_f#dot}"
 	if test -f "${_dst}" ; then
 	    # Try to backup file
 	    test "${BACKUP}" = "yes" && cmd cp "${_dst}" "${BCKDIR}"
