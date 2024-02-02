@@ -9,10 +9,12 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
-alias local="$local"
+alias local="${local}"
+
+###
 
 # Set variables
-PROG="$(basename -- $0)"
+PROG="$(basename -- "$0")"
 
 : ${SRCDIR:="$(pwd)"}
 : ${OUTDIR:="$(pwd)"}
@@ -91,6 +93,8 @@ check_var ()
 	return 1
     fi
 }
+
+###
 
 # Checksum methods
 
@@ -219,6 +223,7 @@ mkblob ()
     fi
 }
 
+# Generate deploy script
 mkdeploy ()
 {
     embed > "${W_OUT}"
@@ -353,14 +358,17 @@ embed ()
     cat << 'BEGIN' ; cat << PARAMS ; cat << 'MAIN' ; cat << BLOB ; cat << 'END'
 #!/bin/sh
 
-# Deploy parameters
 BEGIN
+### Deploy parameters
+
 PRODUCT="${PRODUCT}"
 VERSION="${VERSION}"
 
 INITFILE="${INITFILE}"
 MD5SUM="${MD5SUM}"
+
 PARAMS
+###
 
 # Unset all aliases
 'unalias' -a
@@ -371,14 +379,18 @@ unset -f command
 # Use shell dependent 'local' definition
 local="$(command -v local)"
 test -z "${local}" && local="$(command -v typeset)"
-alias local="$local"
+alias local="${local}"
+
+###
 
 # Set variables
-PROG="$(basename -- $0)"
+PROG="$(basename -- "$0")"
 
-BASEDIR="${HOME:-/tmp}/.deploy"
+: ${XDG_CACHE_HOME:="${HOME}/.cache"}
+
+BASEDIR="${XDG_CACHE_HOME}/spxshell/deploy"
 DEPLOYDIR="${BASEDIR}/${MD5SUM:-none}"
-LOCKFILE="${DEPLOYDIR}/.deploy.lock"
+LOCKFILE="${DEPLOYDIR}/deploy.lock"
 
 EDIR="${DEPLOYDIR}/e"
 XDIR="${DEPLOYDIR}/x"
@@ -389,6 +401,8 @@ INITFILE="${XDIR}/${INITFILE}"
 decode_cmd=""
 unpack_cmd=""
 chksum_cmd=""
+
+###
 
 # Print error message
 err ()
@@ -456,6 +470,8 @@ check_lock ()
     fi
 }
 
+###
+
 # Checksum methods
 
 chksum_md5sum ()
@@ -501,9 +517,13 @@ unpack_tar ()
     cmd tar -x -f "${ARCHFILE}" -C "${XDIR}"
 }
 
+###
+
 # Initialization subroutine
 startup ()
 {
+    local _umask=""
+
     # Check binaries
     # Extract
     decode_cmd="$(find_command uudecode base64 openssl)"
@@ -522,9 +542,12 @@ startup ()
 
     # Check directories
     {
-	check_dir  "${DEPLOYDIR}" &&
-	check_dir  "${EDIR}"      &&
-	check_dir  "${XDIR}"
+	_umask="$(umask)"	# Save umask value
+	umask 0077		# Create only user accessible directories
+	check_dir "${DEPLOYDIR}" &&
+	check_dir "${EDIR}"      &&
+	check_dir "${XDIR}"      &&
+	umask "${_umask}"	# Restore umask
     } || return 1
 
     # Check lock file
