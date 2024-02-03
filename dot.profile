@@ -34,8 +34,8 @@ _ifs="${IFS}"
 IFS=":"
 for _p in ${_path} ; do
     case ":${_npath}:" in
-	( *":${_p}:"* ) ;;
-	( * ) test -d "${_p}" && _npath="${_npath:+${_npath}:}${_p}" ;;
+	*":${_p}:"* ) ;;
+	* ) test -d "${_p}" && _npath="${_npath:+${_npath}:}${_p}" ;;
     esac
 done
 IFS="${_ifs}"
@@ -87,7 +87,7 @@ if test -n "${EUID}" && test "${EUID}" -eq 0 ; then
     if _is_cmd locale ; then
 	# Little Linux hack
 	case " `locale -a` " in
-	    ( *[[:space:]]"C.utf8"[[:space:]]* ) LC_ALL="C.UTF-8" ;;
+	    *[[:space:]]"C.utf8"[[:space:]]* ) LC_ALL="C.UTF-8" ;;
 	esac
     fi
     export LC_ALL
