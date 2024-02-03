@@ -4,8 +4,8 @@
 
 # Use this file only for interactive shell
 case "$-" in ( *i* ) ;; ( * ) return ;; esac
-# Prevent from repeatedly sourcing
-test -z "$_rcsourced" && _rcsourced=true || return
+# Prevent from repeatedly sourcing from .profile
+test -n "${_rcsourced}" && test -n "${_inprofile}" && return
 
 # Determine shell
 if   test -n "${BASH_VERSION}" ; then
@@ -22,14 +22,14 @@ fi
 _os="$(uname -s)"
 
 # Set some shell variables if not set
-test -n "${UID}"  || UID=$(id -ur)
-test -n "${EUID}" || EUID=$(id -u)
-test -n "${USER}" || USER=$(id -un)
-test -n "${HOST}" || HOST=$(hostname)
+test -n "${UID}"  || UID="$(id -ur)"
+test -n "${EUID}" || EUID="$(id -u)"
+test -n "${USER}" || USER="$(id -un)"
+test -n "${HOST}" || HOST="$(hostname)"
 
 # Set shell options
 case "${_sh}" in
-    ksh* )
+    ( ksh* )
 	set -o vi
 	set -o viraw
 	case "$(set -o)" in ( *multiline* ) set -o multiline ;; esac
@@ -40,7 +40,7 @@ esac
 HISTSIZE=1000
 case "$(set -o)" in ( *histexpand* ) set -o histexpand ;; esac
 case "${_sh}" in
-    bash* )
+    ( bash* )
 	shopt -s histappend
 	HISTCONTROL=ignoreboth
 	HISTTIMEFORMAT="%F %T %Z  "
@@ -48,22 +48,22 @@ case "${_sh}" in
 esac
 
 # Set timeout for root
-if test ${EUID} -eq 0 ; then
+if test "${EUID}" -eq 0 ; then
     TMOUT=7200
 fi
 
 # Set prompt
 case "${_sh}" in
-    bash* )
+    ( bash* )
 	PS1='[\A] \u@\h:\w\$ ' ;;
-    ksh* )
+    ( ksh* )
 	PS1='${USER}@${HOST}:${PWD}> '
 	test "${_sh}" = "ksh93" && PS1="(\$(date +%H:%M)) ${PS1}"
 	;;
 esac
 
 # Colorize prompt
-if test -n "${TERM}" -a -t 0 ; then
+if test -n "${TERM}" && test -t 0 ; then
     _off="$(tput sgr0 2>/dev/null)"		# Turn off
     _bold="$(tput bold 2>/dev/null)"		# Bold
     _colu="$(tput setaf 4 2>/dev/null)"		# Blue
@@ -73,23 +73,23 @@ if test -n "${TERM}" -a -t 0 ; then
 	_colu="$(tput setf 1 2>/dev/null)"	# Blue
 	_colr="$(tput setf 4 2>/dev/null)"	# Red
     fi
-    if test ${EUID} -eq 0 ; then
+    if test "${EUID}" -eq 0 ; then
 	# For root user
 	_on="${_bold}${_colr}"
     else
 	# For ordinary user
 	case "${_os}" in
-	    AIX* )   _on="${_bold}" ;;		# Only bold for AIX
-	    Linux* ) _on="${_bold}${_colu}" ;;
+	    ( AIX* )   _on="${_bold}" ;;	# Only bold for AIX
+	    ( Linux* ) _on="${_bold}${_colu}" ;;
 	esac
     fi
-    if test -n "${_on}" -a -n "${_off}" ; then
+    if test -n "${_on}" && test -n "${_off}" ; then
 	case "${_sh}" in
-	    bash* )
+	    ( bash* )
 		PS1="\[${_on}\]${PS1% }\[${_off}\] "
 		test -n "${PS2}" && PS2="\[${_on}\]${PS2% }\[${_off}\] "
 		;;
-	    ksh*  )
+	    ( ksh*  )
 		PS1="${_on}${PS1% }${_off} "
 		test -n "${PS2}" && PS2="${_on}${PS2% }${_off} "
 		;;
@@ -104,3 +104,6 @@ for _f in ${HOME}/.alias ${HOME}/.aliases ${HOME}/.functions ; do
 done
 unset _f
 unset _sh _os
+
+# Set sourced flag
+_rcsourced="true"
