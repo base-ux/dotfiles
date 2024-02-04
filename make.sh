@@ -2,7 +2,7 @@
 
 # Set variables
 PRODUCT="dotfiles"
-VERSION="7"
+VERSION="8"
 
 D="$(dirname -- $0)"
 D="$(cd -- "${D}" ; pwd)"

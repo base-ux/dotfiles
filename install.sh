@@ -103,7 +103,7 @@ copy_file ()
     local _src="$1"
     local _dst="$2"
 
-    test -n "${_src}" -a -n "${_dst}" || return 1
+    test -n "${_src}" && test -n "${_dst}" || return 1
     # Check source file
     if ! test -f "${_src}" ; then
 	err "file '${_src}' not found"
@@ -173,7 +173,7 @@ copy_files ()
 	_dst="${DSTDIR}/${_f#dot}"
 	# Try to backup destination file
 	# Ignore unsuccessful copying
-	test "${BACKUP}" = "yes" -a -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
+	test "${BACKUP}" = "yes" && test -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
 	copy_file "${_src}" "${_dst}"
     done
 }
@@ -187,13 +187,13 @@ link_files ()
 
     for _f in ${LINKFILES} ; do
 	_src="${_f%:*}"
-	test -n "${_src}" -a "${_src}" != "${_f}" && _src="${_src#dot}" || continue
+	test -n "${_src}" && test "${_src}" != "${_f}" && _src="${_src#dot}" || continue
 	_dst="${_f#*:}"
-	test -n "${_dst}" -a "${_dst}" != "${_f}" && _dst="${DSTDIR}/${_dst#dot}" || continue
+	test -n "${_dst}" && test "${_dst}" != "${_f}" && _dst="${DSTDIR}/${_dst#dot}" || continue
 	# Skip if the link exists
 	test -L "${_dst}" && continue
 	# Try to backup file
-	test "${BACKUP}" = "yes" -a -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
+	test "${BACKUP}" = "yes" && test -f "${_dst}" && cmd cp "${_dst}" "${BCKDIR}"
 	cmd ln -sf "${_src}" "${_dst}"
 	if test $? -ne 0 ; then
 	    err "can't create symbolic link '${_src}' -> '${_dst}'"

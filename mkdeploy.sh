@@ -594,7 +594,7 @@ execinit ()
 # Save version information
 bumpver ()
 {
-    if test -n "${PRODUCT}" -a -n "${VERSION}" ; then
+    if test -n "${PRODUCT}" && test -n "${VERSION}" ; then
 	cmd echo "${VERSION}" > "${BASEDIR}/${PRODUCT}"
     fi
 }
