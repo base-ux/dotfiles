@@ -304,11 +304,7 @@ get_options ()
 	    ( 'w' ) WORKDIR="${OPTARG}"  ;;
 	    ( 'P' ) PRODUCT="${OPTARG}"  ;;
 	    ( 'V' ) VERSION="${OPTARG}"  ;;
-	    ( 'f' )
-		test -z "${FILELIST}" &&
-		FILELIST="${OPTARG}" ||
-		FILELIST="${FILELIST} ${OPTARG}"
-		;;
+	    ( 'f' ) FILELIST="${FILELIST:+"${FILELIST} "}${OPTARG}" ;;
 	    ( ':' )
 		err "missing argument for option -- '${OPTARG}'"
 		usage
