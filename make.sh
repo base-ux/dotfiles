@@ -2,7 +2,7 @@
 
 # Set variables
 PRODUCT="dotfiles"
-VERSION="9"
+VERSION="10"
 
 PROG="$(basename -- "$0")"
 

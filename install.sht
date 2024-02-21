@@ -1,5 +1,5 @@
 #%shebang
-#%version 1
+#%version 2
 #
 # Installation script
 #
@@ -18,7 +18,7 @@
 SRCDIR="$(cd -- "$(dirname -- "$0")" ; pwd)"
 DSTDIR="${HOME}"
 
-: ${XDG_DATA_HOME:="${HOME}/.local/share"}
+: "${XDG_DATA_HOME:=${HOME}/.local/share}"
 
 BCKDIR="${XDG_DATA_HOME}/spxshell/backup"
 BACKUP="no"	# No backup by default
@@ -45,8 +45,6 @@ dot.bash_login
 # Initialization subroutine
 startup ()
 {
-    local _umask=""
-
     # Check variables
     {
 	check_var SRCDIR &&
@@ -62,11 +60,8 @@ startup ()
 	BACKUP="no"
     else
 	# Try to create directory
-	_umask="$(umask)"	# Save umask value
-	umask 0077		# Create only user accessible directories
-	cmd mkdir -p "${BCKDIR}"
+	( umask 0077 ; cmd mkdir -p "${BCKDIR}" )
 	test $? -ne 0 && BACKUP="no" || BACKUP="yes"
-	umask "${_umask}"	# Restore umask
     fi
 }
 
